@@ -1,0 +1,35 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: library
+  datasource:
+    url: jdbc:mysql://localhost:3306/library_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+
+library:
+  jwt:
+    secret: ${LIBRARY_JWT_SECRET:change-this-secret-to-at-least-32-bytes}
+    expire-days: 7
+  captcha:
+    enabled: false
+    ttl-minutes: 5
+
+logging:
+  level:
+    com.example.library.mapper: debug
