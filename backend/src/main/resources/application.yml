@@ -29,7 +29,14 @@ library:
   captcha:
     enabled: false
     ttl-minutes: 5
+  borrow:
+    max-active-borrows: 5
+    days: 30
+  page:
+    default-size: 10
+    max-size: 50
 
 logging:
   level:
-    com.example.library.mapper: debug
+    com.example.library: info
+    com.example.library.mapper: warn

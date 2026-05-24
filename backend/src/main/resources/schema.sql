@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS reader (
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     user_id BIGINT UNIQUE,
     create_time DATETIME NOT NULL,
-    update_time DATETIME NOT NULL
+    update_time DATETIME NOT NULL,
+    CONSTRAINT fk_reader_user FOREIGN KEY (user_id) REFERENCES sys_user(id)
 );
 
 CREATE TABLE IF NOT EXISTS book (
@@ -47,7 +48,9 @@ CREATE TABLE IF NOT EXISTS borrow_record (
     return_time DATETIME,
     status VARCHAR(20) NOT NULL,
     create_time DATETIME NOT NULL,
-    update_time DATETIME NOT NULL
+    update_time DATETIME NOT NULL,
+    CONSTRAINT fk_borrow_reader FOREIGN KEY (reader_id) REFERENCES reader(id),
+    CONSTRAINT fk_borrow_book FOREIGN KEY (book_id) REFERENCES book(id)
 );
 
 CREATE INDEX idx_book_title ON book(title);

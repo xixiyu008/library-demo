@@ -2,6 +2,7 @@ package com.example.library.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.library.common.ErrorCode;
+import com.example.library.config.LibraryProperties;
 import com.example.library.dto.LoginRequest;
 import com.example.library.entity.User;
 import com.example.library.exception.BusinessException;
@@ -16,7 +17,6 @@ import com.example.library.vo.LoginResponse;
 import java.time.Duration;
 import java.util.Random;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -29,24 +29,20 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenStore tokenStore;
-
-    @Value("${library.captcha.enabled:false}")
-    private boolean captchaEnabled;
-
-    @Value("${library.captcha.ttl-minutes:5}")
-    private long captchaTtlMinutes;
+    private final LibraryProperties properties;
 
     public AuthServiceImpl(UserMapper userMapper, PasswordEncoder passwordEncoder,
-                           JwtTokenProvider jwtTokenProvider, TokenStore tokenStore) {
+                           JwtTokenProvider jwtTokenProvider, TokenStore tokenStore, LibraryProperties properties) {
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.tokenStore = tokenStore;
+        this.properties = properties;
     }
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        if (captchaEnabled || StringUtils.hasText(request.getCaptchaKey())) {
+        if (properties.getCaptcha().isEnabled() || StringUtils.hasText(request.getCaptchaKey())) {
             if (!StringUtils.hasText(request.getCaptchaKey()) || !StringUtils.hasText(request.getCaptchaCode())
                     || !tokenStore.validateCaptcha(request.getCaptchaKey(), request.getCaptchaCode())) {
                 throw new BusinessException(ErrorCode.AUTH_FAILED, "验证码错误");
@@ -71,7 +67,7 @@ public class AuthServiceImpl implements AuthService {
     public CaptchaVO captcha() {
         String key = UUID.randomUUID().toString();
         String code = String.valueOf(1000 + new Random().nextInt(9000));
-        tokenStore.cacheCaptcha(key, code, Duration.ofMinutes(captchaTtlMinutes));
+        tokenStore.cacheCaptcha(key, code, Duration.ofMinutes(properties.getCaptcha().getTtlMinutes()));
         return new CaptchaVO(key, code);
     }
 

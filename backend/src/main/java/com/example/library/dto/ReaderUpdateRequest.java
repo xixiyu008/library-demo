@@ -3,13 +3,20 @@ package com.example.library.dto;
 import com.example.library.enums.ReaderStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public class ReaderUpdateRequest {
     @NotBlank
+    @Size(max = 50)
     private String studentNo;
     @NotBlank
+    @Size(max = 50)
     private String name;
+    @Size(max = 100)
     private String college;
+    @Pattern(regexp = "^$|^1\\d{10}$", message = "必须是11位手机号码")
+    @Size(max = 30)
     private String phone;
     private Long userId;
     @NotNull

@@ -1,11 +1,14 @@
 package com.example.library.dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 public class BorrowRequest {
     @NotNull
+    @Min(1)
     private Long readerId;
     @NotNull
+    @Min(1)
     private Long bookId;
 
     public Long getReaderId() { return readerId; }

@@ -9,8 +9,10 @@ import com.example.library.service.BorrowService;
 import com.example.library.vo.BorrowRecordVO;
 import com.example.library.vo.BorrowResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/borrows")
+@Validated
 public class BorrowController {
     private final BorrowService borrowService;
 
@@ -37,15 +40,15 @@ public class BorrowController {
 
     @PutMapping("/{id}/return")
     @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")
-    public Result<Void> returnBook(@PathVariable Long id) {
+    public Result<Void> returnBook(@PathVariable @Min(1) Long id) {
         borrowService.returnBook(id);
         return Result.success();
     }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")
-    public Result<PageResult<BorrowRecordVO>> page(@RequestParam(defaultValue = "1") int page,
-                                                   @RequestParam(defaultValue = "10") int pageSize,
+    public Result<PageResult<BorrowRecordVO>> page(@RequestParam(defaultValue = "1") @Min(1) int page,
+                                                   @RequestParam(defaultValue = "10") @Min(1) int pageSize,
                                                    @RequestParam(required = false) Long readerId,
                                                    @RequestParam(required = false) Long bookId,
                                                    @RequestParam(required = false) BorrowStatus status) {
@@ -54,8 +57,8 @@ public class BorrowController {
 
     @GetMapping("/my")
     @PreAuthorize("hasRole('STUDENT')")
-    public Result<PageResult<BorrowRecordVO>> my(@RequestParam(defaultValue = "1") int page,
-                                                 @RequestParam(defaultValue = "10") int pageSize,
+    public Result<PageResult<BorrowRecordVO>> my(@RequestParam(defaultValue = "1") @Min(1) int page,
+                                                 @RequestParam(defaultValue = "10") @Min(1) int pageSize,
                                                  @AuthenticationPrincipal LoginUser loginUser) {
         return Result.success(borrowService.my(page, pageSize, loginUser));
     }

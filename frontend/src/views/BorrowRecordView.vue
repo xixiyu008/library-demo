@@ -6,6 +6,7 @@ import { getBooks } from '../api/book'
 import { borrowBook, getBorrows, returnBook } from '../api/borrow'
 import { getReaders } from '../api/reader'
 import type { BookVO, BorrowRecordVO, BorrowStatus, ReaderVO } from '../types'
+import { formatDateTime } from '../utils/format'
 
 const rows = ref<BorrowRecordVO[]>([])
 const total = ref(0)
@@ -210,9 +211,15 @@ onMounted(() => {
         <el-table-column prop="id" label="编号" width="80" />
         <el-table-column prop="readerName" label="读者" min-width="120" />
         <el-table-column prop="bookTitle" label="图书" min-width="180" show-overflow-tooltip />
-        <el-table-column prop="borrowTime" label="借出时间" min-width="170" />
-        <el-table-column prop="dueTime" label="应还时间" min-width="170" />
-        <el-table-column prop="returnTime" label="归还时间" min-width="170" />
+        <el-table-column label="借出时间" min-width="150">
+          <template #default="{ row }">{{ formatDateTime(row.borrowTime) }}</template>
+        </el-table-column>
+        <el-table-column label="应还时间" min-width="150">
+          <template #default="{ row }">{{ formatDateTime(row.dueTime) }}</template>
+        </el-table-column>
+        <el-table-column label="归还时间" min-width="150">
+          <template #default="{ row }">{{ formatDateTime(row.returnTime) }}</template>
+        </el-table-column>
         <el-table-column label="状态" width="110">
           <template #default="{ row }">
             <el-tag :type="row.status === 'RETURNED' ? 'success' : row.status === 'OVERDUE' ? 'danger' : 'warning'" effect="light">

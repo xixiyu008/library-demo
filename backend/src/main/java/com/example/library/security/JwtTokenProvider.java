@@ -1,5 +1,6 @@
 package com.example.library.security;
 
+import com.example.library.config.LibraryProperties;
 import com.example.library.enums.UserRole;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -7,7 +8,6 @@ import java.time.Instant;
 import java.util.Base64;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,14 +15,14 @@ public class JwtTokenProvider {
     private static final Base64.Encoder URL_ENCODER = Base64.getUrlEncoder().withoutPadding();
     private static final Base64.Decoder URL_DECODER = Base64.getUrlDecoder();
 
-    @Value("${library.jwt.secret}")
-    private String secret;
+    private final LibraryProperties properties;
 
-    @Value("${library.jwt.expire-days}")
-    private long expireDays;
+    public JwtTokenProvider(LibraryProperties properties) {
+        this.properties = properties;
+    }
 
     public String createToken(Long userId, String username, UserRole role) {
-        Instant expiresAt = Instant.now().plus(Duration.ofDays(expireDays));
+        Instant expiresAt = Instant.now().plus(Duration.ofDays(properties.getJwt().getExpireDays()));
         String header = encode("{\"alg\":\"HS256\",\"typ\":\"JWT\"}");
         String payload = encode("{\"userId\":" + userId
                 + ",\"username\":\"" + escape(username)
@@ -63,7 +63,7 @@ public class JwtTokenProvider {
     private String sign(String value) {
         try {
             Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            mac.init(new SecretKeySpec(properties.getJwt().getSecret().getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
             return URL_ENCODER.encodeToString(mac.doFinal(value.getBytes(StandardCharsets.UTF_8)));
         } catch (Exception exception) {
             throw new IllegalStateException("Unable to sign token", exception);

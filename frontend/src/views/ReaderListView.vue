@@ -19,9 +19,17 @@ const userOptions = ref<UserVO[]>([])
 const userLoading = ref(false)
 const query = reactive({ page: 1, pageSize: 10, keyword: '' })
 const form = reactive({ studentNo: '', name: '', college: '', phone: '', userId: undefined as number | undefined, status: 'ACTIVE' as ReaderStatus })
+const collegeOptions = ['计算机学院', '电子信息学院', '数学学院', '物理学院', '化学学院', '生命科学学院', '遥感学院']
 const rules: FormRules = {
   studentNo: [{ required: true, message: '请输入学号', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入姓名', trigger: 'blur' }]
+  name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+  phone: [{
+    validator: (_rule, value, callback) => {
+      if (!value || /^1\d{10}$/.test(value)) callback()
+      else callback(new Error('请输入 11 位手机号码'))
+    },
+    trigger: 'blur'
+  }]
 }
 const usersById = computed(() => new Map(userOptions.value.map((user) => [user.id, user])))
 
@@ -184,8 +192,12 @@ onMounted(() => {
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
       <el-form-item label="学号" prop="studentNo"><el-input ref="studentNoInput" v-model.trim="form.studentNo" placeholder="请输入学号" /></el-form-item>
       <el-form-item label="姓名" prop="name"><el-input v-model.trim="form.name" placeholder="请输入姓名" /></el-form-item>
-      <el-form-item label="学院"><el-input v-model.trim="form.college" placeholder="请输入学院" /></el-form-item>
-      <el-form-item label="电话"><el-input v-model.trim="form.phone" placeholder="请输入联系电话" /></el-form-item>
+      <el-form-item label="学院">
+        <el-select v-model="form.college" clearable filterable placeholder="请选择学院">
+          <el-option v-for="college in collegeOptions" :key="college" :label="college" :value="college" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="电话" prop="phone"><el-input v-model.trim="form.phone" maxlength="11" placeholder="请输入 11 位手机号码" /></el-form-item>
       <el-form-item label="登录账号">
         <el-select
           v-model="form.userId"

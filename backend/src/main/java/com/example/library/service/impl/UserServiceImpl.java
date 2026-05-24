@@ -4,10 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.library.common.ErrorCode;
 import com.example.library.common.PageResult;
+import com.example.library.common.PageSupport;
+import com.example.library.config.LibraryProperties;
 import com.example.library.dto.UserCreateRequest;
 import com.example.library.dto.UserUpdateRequest;
+import com.example.library.entity.Reader;
 import com.example.library.entity.User;
 import com.example.library.exception.BusinessException;
+import com.example.library.mapper.ReaderMapper;
 import com.example.library.mapper.UserMapper;
 import com.example.library.service.UserService;
 import com.example.library.vo.UserVO;
@@ -19,11 +23,16 @@ import org.springframework.util.StringUtils;
 @Service
 public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
+    private final ReaderMapper readerMapper;
     private final PasswordEncoder passwordEncoder;
+    private final LibraryProperties properties;
 
-    public UserServiceImpl(UserMapper userMapper, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserMapper userMapper, ReaderMapper readerMapper, PasswordEncoder passwordEncoder,
+                           LibraryProperties properties) {
         this.userMapper = userMapper;
+        this.readerMapper = readerMapper;
         this.passwordEncoder = passwordEncoder;
+        this.properties = properties;
     }
 
     @Override
@@ -33,7 +42,9 @@ public class UserServiceImpl implements UserService {
             wrapper.like(User::getUsername, keyword);
         }
         wrapper.orderByDesc(User::getCreateTime);
-        Page<User> result = userMapper.selectPage(Page.of(page, pageSize), wrapper);
+        Page<User> result = userMapper.selectPage(Page.of(
+                PageSupport.normalizePage(page),
+                PageSupport.normalizePageSize(pageSize, properties)), wrapper);
         return new PageResult<>(result.getTotal(), result.getRecords().stream().map(this::toVO).toList());
     }
 
@@ -72,6 +83,10 @@ public class UserServiceImpl implements UserService {
         requireUser(id);
         if (id.equals(currentUserId)) {
             throw new BusinessException(ErrorCode.CONFLICT, "不能删除当前登录用户");
+        }
+        Long readerCount = readerMapper.selectCount(new LambdaQueryWrapper<Reader>().eq(Reader::getUserId, id));
+        if (readerCount > 0) {
+            throw new BusinessException(ErrorCode.CONFLICT, "该用户已关联读者，不能删除");
         }
         userMapper.deleteById(id);
     }

@@ -3,13 +3,19 @@ package com.example.library.dto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class BookCreateRequest {
+    @Size(max = 30)
     private String isbn;
     @NotBlank
+    @Size(max = 100)
     private String title;
+    @Size(max = 100)
     private String author;
+    @Size(max = 100)
     private String publisher;
+    @Size(max = 50)
     private String category;
     @NotNull
     @Min(0)

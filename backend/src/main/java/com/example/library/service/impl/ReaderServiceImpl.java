@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.library.common.ErrorCode;
 import com.example.library.common.PageResult;
+import com.example.library.common.PageSupport;
+import com.example.library.config.LibraryProperties;
 import com.example.library.dto.ReaderCreateRequest;
 import com.example.library.dto.ReaderUpdateRequest;
 import com.example.library.entity.BorrowRecord;
@@ -28,11 +30,14 @@ public class ReaderServiceImpl implements ReaderService {
     private final ReaderMapper readerMapper;
     private final BorrowRecordMapper borrowRecordMapper;
     private final UserMapper userMapper;
+    private final LibraryProperties properties;
 
-    public ReaderServiceImpl(ReaderMapper readerMapper, BorrowRecordMapper borrowRecordMapper, UserMapper userMapper) {
+    public ReaderServiceImpl(ReaderMapper readerMapper, BorrowRecordMapper borrowRecordMapper, UserMapper userMapper,
+                             LibraryProperties properties) {
         this.readerMapper = readerMapper;
         this.borrowRecordMapper = borrowRecordMapper;
         this.userMapper = userMapper;
+        this.properties = properties;
     }
 
     @Override
@@ -42,7 +47,9 @@ public class ReaderServiceImpl implements ReaderService {
             wrapper.like(Reader::getName, keyword).or().like(Reader::getStudentNo, keyword);
         }
         wrapper.orderByDesc(Reader::getCreateTime);
-        Page<Reader> result = readerMapper.selectPage(Page.of(page, pageSize), wrapper);
+        Page<Reader> result = readerMapper.selectPage(Page.of(
+                PageSupport.normalizePage(page),
+                PageSupport.normalizePageSize(pageSize, properties)), wrapper);
         return new PageResult<>(result.getTotal(), result.getRecords().stream().map(this::toVO).toList());
     }
 

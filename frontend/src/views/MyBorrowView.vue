@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { Refresh } from '@element-plus/icons-vue'
 import { getMyBorrows } from '../api/borrow'
 import type { BorrowRecordVO } from '../types'
+import { formatDateTime } from '../utils/format'
 
 const route = useRoute()
 const router = useRouter()
@@ -60,9 +61,15 @@ watch(() => route.query.status, () => {
           <div class="empty-hint">{{ overdueOnly ? '当前没有逾期记录。' : '暂无借阅记录。' }}</div>
         </template>
         <el-table-column prop="bookTitle" label="图书" min-width="180" show-overflow-tooltip />
-        <el-table-column prop="borrowTime" label="借出时间" min-width="170" />
-        <el-table-column prop="dueTime" label="应还时间" min-width="170" />
-        <el-table-column prop="returnTime" label="归还时间" min-width="170" />
+        <el-table-column label="借出时间" min-width="150">
+          <template #default="{ row }">{{ formatDateTime(row.borrowTime) }}</template>
+        </el-table-column>
+        <el-table-column label="应还时间" min-width="150">
+          <template #default="{ row }">{{ formatDateTime(row.dueTime) }}</template>
+        </el-table-column>
+        <el-table-column label="归还时间" min-width="150">
+          <template #default="{ row }">{{ formatDateTime(row.returnTime) }}</template>
+        </el-table-column>
         <el-table-column label="状态" width="110">
           <template #default="{ row }">
             <el-tag :type="row.status === 'RETURNED' ? 'success' : row.status === 'OVERDUE' ? 'danger' : 'warning'" effect="light">

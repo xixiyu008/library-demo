@@ -4,6 +4,7 @@ import com.example.library.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.example.library.common.ErrorCode;
+import com.example.library.common.Result;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -20,6 +21,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+    private final ObjectMapper objectMapper;
+
+    public SecurityConfig(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
@@ -30,8 +36,14 @@ public class SecurityConfig {
                     response.setStatus(401);
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                     response.setCharacterEncoding("UTF-8");
-                    String body = new ObjectMapper().writeValueAsString(
-                            new com.example.library.common.Result<>(ErrorCode.AUTH_FAILED.getCode(), ErrorCode.AUTH_FAILED.getMessage(), null));
+                    String body = objectMapper.writeValueAsString(
+                            Result.fail(ErrorCode.AUTH_FAILED));
+                    response.getWriter().write(body);
+                }).accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(403);
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    response.setCharacterEncoding("UTF-8");
+                    String body = objectMapper.writeValueAsString(Result.fail(ErrorCode.FORBIDDEN));
                     response.getWriter().write(body);
                 }))
                 .authorizeHttpRequests(auth -> auth

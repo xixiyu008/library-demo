@@ -4,6 +4,7 @@ public class Result<T> {
     private int code;
     private String message;
     private T data;
+    private String traceId;
 
     public static <T> Result<T> success(T data) {
         return new Result<>(ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage(), data);
@@ -52,5 +53,13 @@ public class Result<T> {
 
     public void setData(T data) {
         this.data = data;
+    }
+
+    public String getTraceId() {
+        return traceId;
+    }
+
+    public void setTraceId(String traceId) {
+        this.traceId = traceId;
     }
 }

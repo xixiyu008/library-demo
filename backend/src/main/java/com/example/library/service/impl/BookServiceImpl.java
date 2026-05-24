@@ -3,7 +3,9 @@ package com.example.library.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.library.common.ErrorCode;
+import com.example.library.common.PageSupport;
 import com.example.library.common.PageResult;
+import com.example.library.config.LibraryProperties;
 import com.example.library.dto.BookCreateRequest;
 import com.example.library.dto.BookUpdateRequest;
 import com.example.library.entity.Book;
@@ -24,10 +26,12 @@ import org.springframework.util.StringUtils;
 public class BookServiceImpl implements BookService {
     private final BookMapper bookMapper;
     private final BorrowRecordMapper borrowRecordMapper;
+    private final LibraryProperties properties;
 
-    public BookServiceImpl(BookMapper bookMapper, BorrowRecordMapper borrowRecordMapper) {
+    public BookServiceImpl(BookMapper bookMapper, BorrowRecordMapper borrowRecordMapper, LibraryProperties properties) {
         this.bookMapper = bookMapper;
         this.borrowRecordMapper = borrowRecordMapper;
+        this.properties = properties;
     }
 
     @Override
@@ -37,7 +41,9 @@ public class BookServiceImpl implements BookService {
             wrapper.like(Book::getTitle, keyword).or().like(Book::getIsbn, keyword).or().like(Book::getAuthor, keyword);
         }
         wrapper.orderByDesc(Book::getCreateTime);
-        Page<Book> result = bookMapper.selectPage(Page.of(page, pageSize), wrapper);
+        Page<Book> result = bookMapper.selectPage(Page.of(
+                PageSupport.normalizePage(page),
+                PageSupport.normalizePageSize(pageSize, properties)), wrapper);
         return new PageResult<>(result.getTotal(), result.getRecords().stream().map(this::toVO).toList());
     }
 

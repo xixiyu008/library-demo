@@ -7,7 +7,9 @@ import com.example.library.dto.ReaderUpdateRequest;
 import com.example.library.service.ReaderService;
 import com.example.library.vo.ReaderVO;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/readers")
 @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")
+@Validated
 public class ReaderController {
     private final ReaderService readerService;
 
@@ -29,8 +32,8 @@ public class ReaderController {
     }
 
     @GetMapping
-    public Result<PageResult<ReaderVO>> page(@RequestParam(defaultValue = "1") int page,
-                                             @RequestParam(defaultValue = "10") int pageSize,
+    public Result<PageResult<ReaderVO>> page(@RequestParam(defaultValue = "1") @Min(1) int page,
+                                             @RequestParam(defaultValue = "10") @Min(1) int pageSize,
                                              @RequestParam(required = false) String keyword) {
         return Result.success(readerService.page(page, pageSize, keyword));
     }
@@ -41,12 +44,12 @@ public class ReaderController {
     }
 
     @PutMapping("/{id}")
-    public Result<ReaderVO> update(@PathVariable Long id, @Valid @RequestBody ReaderUpdateRequest request) {
+    public Result<ReaderVO> update(@PathVariable @Min(1) Long id, @Valid @RequestBody ReaderUpdateRequest request) {
         return Result.success(readerService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@PathVariable @Min(1) Long id) {
         readerService.delete(id);
         return Result.success();
     }
